@@ -1,0 +1,20 @@
+{
+  "name": "kreczko-grid_pool_accounts",
+  "author": "kreczko",
+  "description": "Puppet module for creating grid pool accounts",
+  "license": "Apache License, Version 2.0",
+  "project_page": "https://github.com/HEP-Puppet/puppet-grid_pool_accounts",
+  "source": "git@github.com:HEP-Puppet/puppet-grid_pool_accounts.git",
+  "summary": "Puppet module for creating grid pool accounts",
+  "version": "0.0.1",
+  "checksums": {
+    "Modulefile": "99cb0db666df7d73c47e411a99a61b11",
+    "README.markdown": "3d224bd7a44f860d7caca42a36be1891",
+    "Rakefile": "f37e6131fe7de9a49b09d31596f5fbf1",
+    "manifests/init.pp": "fd651d7a1eac2ff2898a21527d021bef",
+    "spec/spec.opts": "a600ded995d948e393fbe2320ba8e51c",
+    "spec/spec_helper.rb": "3ea886dd135e120afa31e0aab12e85b0",
+    "tests/init.pp": "2f995f6c3a7ba74a7c2970e9072d4b94"
+  },
+  "dependencies": []
+}
