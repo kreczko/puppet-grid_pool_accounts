@@ -8,13 +8,23 @@
   "summary": "Puppet module for creating grid pool accounts",
   "version": "0.0.1",
   "checksums": {
-    "Modulefile": "99cb0db666df7d73c47e411a99a61b11",
+    "Modulefile": "231b525c036e6f2556400942623f3e6b",
     "README.markdown": "3d224bd7a44f860d7caca42a36be1891",
     "Rakefile": "f37e6131fe7de9a49b09d31596f5fbf1",
-    "manifests/init.pp": "fd651d7a1eac2ff2898a21527d021bef",
+    "files/grid-mapfile": "80623bce33b819d45138f779af5c311f",
+    "files/group": "0e2e94fd46369af1982a42e647d5aea8",
+    "manifests/add_grid_role.pp": "4c55003032a74a8469cf3a17cc083dcd",
+    "manifests/init.pp": "0169c6b06e16d1e50d7fa0f58f056ab8",
+    "manifests/pool_account.pp": "6aac4f9d081d381225254088e32108c7",
+    "manifests/pool_group.pp": "b8618e80489c707c5b215dc77111c0a1",
     "spec/spec.opts": "a600ded995d948e393fbe2320ba8e51c",
     "spec/spec_helper.rb": "3ea886dd135e120afa31e0aab12e85b0",
     "tests/init.pp": "2f995f6c3a7ba74a7c2970e9072d4b94"
   },
-  "dependencies": []
+  "dependencies": [
+    {
+      "name": "puppetlabs/stdlib",
+      "version_requirement": "\u003e\u003d4.1.0"
+    }
+  ]
 }
