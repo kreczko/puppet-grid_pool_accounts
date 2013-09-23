@@ -60,12 +60,14 @@ define grid_pool_accounts::pool_account (
     managehome => $manage_home,
   }
 
-  file { "${title}_home":
-    ensure => $dir_ensure,
-    path   => $home_dir,
-    owner  => $dir_owner,
-    group  => $dir_group,
-    mode   => 0700;
+  if $manage_home {
+    file { "${title}_home":
+      ensure => $dir_ensure,
+      path   => $home_dir,
+      owner  => $dir_owner,
+      group  => $dir_group,
+      mode   => 0700;
+    }
   }
 
   if $create_gridmapdir_entry {
