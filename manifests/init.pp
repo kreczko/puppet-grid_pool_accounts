@@ -29,7 +29,7 @@ define grid_pool_accounts (
   $user_size = size($users)
 
   if $uid_size == $user_size {
-    pool_account { $users:
+    grid_pool_accounts::pool_account { $users:
       manage_home             => $create_home_dir,
       primary_group           => $primary_group,
       groups                  => $groups,

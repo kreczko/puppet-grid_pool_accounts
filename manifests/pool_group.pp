@@ -1,4 +1,4 @@
-define pool_group (
+define grid_pool_accounts::pool_group (
   $group = $title,
   $gid   = undef,
   $roles = [],) {

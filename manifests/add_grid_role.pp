@@ -1,4 +1,4 @@
-define add_grid_role ($role = $title,
+define grid_pool_accounts::add_grid_role ($role = $title,
   $user = undef,
   $group = undef,
 ){

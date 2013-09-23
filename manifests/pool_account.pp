@@ -12,7 +12,7 @@
 #    primary_group => 'cmspilot',
 #    groups        => [ 'cms'],
 #  }
-define pool_account (
+define grid_pool_accounts::pool_account (
   $username                = $title,
   $password                = '*NP*',
   $shell                   = '/bin/bash',

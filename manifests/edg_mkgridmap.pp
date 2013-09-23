@@ -1,4 +1,4 @@
-class edg_mkgridmap {
+class grid_pool_accounts::edg_mkgridmap {
   file { '/etc/edg-mkgridmap.conf':
     ensure => present,
     source => "puppet:///modules/${module_name}/edg-mkgridmap.conf",
