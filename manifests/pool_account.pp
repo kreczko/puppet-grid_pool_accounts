@@ -31,9 +31,9 @@ define grid_pool_accounts::pool_account (
       $dir_group  = $primary_group
       User[$title] -> File["${title}_home"]
 
-      group { $primary_group: ensure => present, }
-
-      group { $groups: ensure => present, }
+      if !defined(Group[$primary_group]) {
+        err("Primary group '$primary_group' is not defined.")
+      }
     }
     absent  : {
       $dir_ensure = absent
