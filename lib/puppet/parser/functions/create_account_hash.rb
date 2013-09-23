@@ -9,17 +9,22 @@ Usage:
   create_account_hash([user1, user2], [1111, 1112])
 returns:
 {user1 => {uid => 1111}, user2 => {uid => 1112}}
-
+  
 ENDOFDOC
-  ) do |args|
+  ) do |arguments|
 
     require 'rubygems'
     require 'etc'
-    usernames=args[0]
-    uids=args[1]
+    usernames=arguments[0]
+    uids=arguments[1]
+
+    # Check that both args are arrays.
+    unless usernames.is_a?(Array) and uids.is_a?(Array)
+      raise(Puppet::ParseError, 'create_account_hash(): Requires two arrays to work with')
+    end
 
     accounts = Hash.new()
-    @usernames.zip(@uids).each do |username, uid|
+    usernames.zip(uids).each do |username, uid|
       accounts[username] = Hash.new()
       accounts[username]['uid'] = uid
     end
