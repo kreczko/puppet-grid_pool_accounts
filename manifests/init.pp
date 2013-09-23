@@ -29,13 +29,15 @@ define grid_pool_accounts (
   $user_size = size($users)
 
   if $uid_size == $user_size {
-    grid_pool_accounts::pool_account { $users:
+    $defaults = {
       manage_home             => $create_home_dir,
       primary_group           => $primary_group,
       groups                  => $groups,
-      uid                     => $uids,
       create_gridmapdir_entry => $create_gridmapdir_entry,
     }
+
+    $accounts = create_account_hash($users, $uids)
+    create_resources('grid_pool_accounts::pool_account', $accounts, $defaults)
   } else {
     notify { "grid_pool_accounts_error_$title": message => "UID range is not the same as account range. UID range :$user_ID_number_start - $user_ID_number_end, account range: $account_number_start - $account_number_end", 
     }
