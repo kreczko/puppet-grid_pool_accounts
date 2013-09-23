@@ -30,6 +30,10 @@ define pool_account (
       $dir_owner  = $username
       $dir_group  = $primary_group
       User[$title] -> File["${title}_home"]
+
+      group { $primary_group: ensure => present, }
+
+      group { $groups: ensure => present, }
     }
     absent  : {
       $dir_ensure = absent
@@ -38,7 +42,8 @@ define pool_account (
       File["${title}_home"] -> User[$title]
     }
     default : {
-      err("Invalid value given for ensure: ${ensure}. Must be one of present,absent.")
+      err("Invalid value given for ensure: ${ensure}. Must be one of present,absent."
+      )
     }
   }
 
