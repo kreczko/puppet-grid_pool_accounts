@@ -29,7 +29,9 @@ define grid_pool_accounts::pool_account (
       $dir_ensure = directory
       $dir_owner  = $username
       $dir_group  = $primary_group
-      User[$title] -> File["${title}_home"]
+      if $manage_home {
+        User[$title] -> File["${title}_home"]
+      }
 
       if !defined(Group[$primary_group]) {
         err("Primary group '$primary_group' is not defined.")
