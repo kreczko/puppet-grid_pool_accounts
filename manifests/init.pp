@@ -37,7 +37,7 @@ define grid_pool_accounts (
       create_gridmapdir_entry => $create_gridmapdir_entry,
     }
   } else {
-    notify { 'grid_pool_accounts_error': message => "UID range is not the same as account range. UID range :$user_ID_number_start - $user_ID_number_end, account range: $account_number_start - $account_number_end", 
+    notify { "grid_pool_accounts_error_$title": message => "UID range is not the same as account range. UID range :$user_ID_number_start - $user_ID_number_end, account range: $account_number_start - $account_number_end", 
     }
   }
 
