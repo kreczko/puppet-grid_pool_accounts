@@ -3,6 +3,7 @@
 	<name>grid_pool_accounts</name>
 	<comment></comment>
 	<projects>
+		<project>puppetlabs-stdlib</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
