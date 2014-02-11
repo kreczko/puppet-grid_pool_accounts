@@ -1,0 +1,16 @@
+alice:x:705:alicpil020,alicpil021,alicpil022,alicpil023,alicpil024,alicpil025,alicpil026,alicpil027,alicpil028,alicpil029
+alicepil:x:805:
+atlas:x:1500:atlspil030,atlspil031,atlspil032,atlspil033,atlspil034,atlspil035,atlspil036,atlspil037,atlspil038,atlspil039
+atlaspil:x:807:
+cms:x:700:cmspil000,cmspil001,cmspil002,cmspil003,cmspil004,cmspil005,cmspil006,cmspil007,cmspil008,cmspil009
+cmspilot:x:800:
+dteam:x:703:
+gridpp:x:619:
+ilc:x:704:
+lhcb:x:701:lhcbpil010,lhcbpil011,lhcbpil012,lhcbpil013,lhcbpil014,lhcbpil015,lhcbpil016,lhcbpil017,lhcbpil018,lhcbpil019
+lhcbpil:x:801:
+lsl:x:709:
+ngs:x:708:
+ops:x:702:
+southgrid:x:620:
+zeus:x:706:
