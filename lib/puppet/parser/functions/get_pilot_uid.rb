@@ -11,7 +11,7 @@ ENDOFDOC
     require 'etc'
     vo = arguments[0]
 
-    filename = '/var/cache/users.conf'
+    filename = arguments[1]
     uids = Array.new()
     File.open(filename).each_line do | line |
     tmp = line.split(":")

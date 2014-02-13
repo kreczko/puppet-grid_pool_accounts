@@ -2,7 +2,7 @@
 #
 #
 module Puppet::Parser::Functions
-  newfunction(:get_gname, :type => :rvalue, :doc => <<-'ENDOFDOC'
+  newfunction(:get_pool_gname, :type => :rvalue, :doc => <<-'ENDOFDOC'
 This function takes a vo and returns name of the group by parsing groups.conf file
   
 ENDOFDOC
@@ -11,7 +11,7 @@ ENDOFDOC
     require 'rubygems'
     require 'etc'
     vo = arguments[0]
-    filename = '/var/cache/users.conf'
+    filename = arguments[1]
     gname =''
     File.open(filename).each_line do | line |
     tmp = line.split(":")

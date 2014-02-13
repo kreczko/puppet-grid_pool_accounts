@@ -2,7 +2,7 @@
 #
 #
 module Puppet::Parser::Functions
-  newfunction(:get_gid, :type => :rvalue, :doc => <<-'ENDOFDOC'
+  newfunction(:get_pool_gid, :type => :rvalue, :doc => <<-'ENDOFDOC'
  This function takes a vo and returns gid of the group by parsing groups.conf file 
 ENDOFDOC
   ) do |arguments|
@@ -10,7 +10,7 @@ ENDOFDOC
     require 'rubygems'
     require 'etc'
     vo = arguments[0]
-    filename = '/var/cache/users.conf'
+    filename = arguments[1]
     gid = ''
     File.open(filename).each_line do | line |
     tmp = line.split(":")

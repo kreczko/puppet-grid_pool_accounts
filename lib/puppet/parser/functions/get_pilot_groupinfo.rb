@@ -16,7 +16,7 @@ ENDOFDOC
     require 'rubygems'
     require 'etc'
     vo=arguments
-    filename = '/var/cache/users.conf'
+    filename = arguments[1]
     groupinfo = Array.new()
     File.open(filename).each_line do | line |
     tmp = line.split(":")

@@ -13,6 +13,7 @@
 define grid_pool_accounts (
   $vo                      = $title,
   $grid_users_conf         = true,
+  $users_conf              = '/etc/puppet/files/grid/users.conf',
   $account_prefix          = 'test',
   $account_number_start    = '000',
   $account_number_end      = '001',
@@ -25,14 +26,14 @@ define grid_pool_accounts (
   $create_gridmapdir_entry = false) {
 
   if $grid_users_conf {
-       $users = get_users($vo)
-       $uids = get_uid($vo)
-       $primary_group = get_gid($vo)
-       $primary_gname = get_gname($vo)
-       $pilot_users = get_pilot_users($vo)
-       $pilot_uid   = get_pilot_uid($vo)
-       $pilot_gid   = get_pilot_gid($vo)
-       $pilot_gname = get_pilot_gname($vo)
+       $users = get_pool_users($vo, $users_conf)
+       $uids = get_pool_uid($vo, $users_conf)
+       $primary_group = get_pool_gid($vo, $users_conf)
+       $primary_gname = get_pool_gname($vo, $users_conf)
+       $pilot_users = get_pilot_users($vo, $users_conf)
+       $pilot_uid   = get_pilot_uid($vo, $users_conf)
+       $pilot_gid   = get_pilot_gid($vo, $users_conf)
+       $pilot_gname = get_pilot_gname($vo, $users_conf)
    
        $defaults = {
           manage_home             => $create_home_dir,

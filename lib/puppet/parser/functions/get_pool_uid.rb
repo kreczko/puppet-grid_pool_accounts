@@ -2,8 +2,8 @@
 #
 #
 module Puppet::Parser::Functions
-  newfunction(:get_users, :type => :rvalue, :doc => <<-'ENDOFDOC'
- This function takes a vo and returns an array of normal users  by parsing groups.conf file 
+  newfunction(:get_pool_uid, :type => :rvalue, :doc => <<-'ENDOFDOC'
+ This function takes a vo and returns an array of pool account uid by parsing groups.conf file 
 ENDOFDOC
   ) do |arguments|
 
@@ -11,16 +11,16 @@ ENDOFDOC
     require 'etc'
     vo = arguments[0]
 
-    filename = '/var/cache/users.conf'
-    users = Array.new()
+    filename = arguments[1]
+    uids = Array.new()
     File.open(filename).each_line do | line |
     tmp = line.split(":")
     if tmp[4] == vo
       if tmp[5] != 'pilot'
-      users.push(tmp[1])
+      uids.push(tmp[0])
       end
     end
     end
-    return users
-  end
-end 
+    return uids
+ end
+end
