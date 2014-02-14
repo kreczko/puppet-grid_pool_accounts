@@ -26,6 +26,7 @@ define grid_pool_accounts (
   $create_gridmapdir_entry = false) {
 
   if $grid_users_conf {
+       # These custom functions parse file defined by $users_conf. It has be available at puppet server. 
        $users = get_pool_users($vo, $users_conf)
        $uids = get_pool_uid($vo, $users_conf)
        $primary_group = get_pool_gid($vo, $users_conf)
@@ -65,6 +66,7 @@ define grid_pool_accounts (
   }  
 
   if $uid_size == $user_size {
+       # Check if there is any pilot account required for VO
        if empty($pilot_gid) {
            grid_pool_accounts::pool_group {$primary_gname : gid => "$primary_group" }
            $accounts = create_account_hash($users, $uids)
