@@ -1,9 +1,11 @@
 define grid_pool_accounts::pool_group (
-  $group = $title,
-  $gid   = undef,
-  $roles = [],) {
+  $ensure = 'present',
+  $group  = $title,
+  $gid    = undef,
+  $roles  = [],
+) {
   group { $group:
-    ensure => present,
+    ensure => $ensure,
     gid    => $gid,
   }
   # create groups
