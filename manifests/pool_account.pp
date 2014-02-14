@@ -38,6 +38,12 @@ define grid_pool_accounts::pool_account (
       $dir_ensure = 'absent'
       $dir_owner  = undef
       $dir_group  = undef
+      # removing users / groups inverses the relationship between them, meaning
+      # the group requires the user because the users have to be removed before
+      # the group can be removed: http://projects.puppetlabs.com/issues/9622
+      if $primary_group {
+        User[$title] -> Group[$primary_group]
+      }
     }
     default : {
       err("Invalid value given for ensure: ${ensure}. Must be one of present,absent."

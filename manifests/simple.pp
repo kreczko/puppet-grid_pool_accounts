@@ -20,14 +20,16 @@ class grid_pool_accounts::simple(
 ---
 <% @accounts.keys.sort.each do |vo|
   pgroup = @accounts[vo].has_key?("group") ? @accounts[vo]["group"] : (@poolgroups ? vo : nil)
+  if pgroup
 -%>
 <%= pgroup %>:
-  <%- @pg_options.each do |opt|
-    if @accounts[vo].has_key?(opt) -%>
+    <%- @pg_options.each do |opt|
+      if @accounts[vo].has_key?(opt) -%>
   <%= opt %>: <%= @accounts[vo][opt] %>
-    <%- end
-  end -%>
-<%- end -%>
+      <%- end
+    end -%>
+<%- end
+end -%>
 ')
 
 #  notify { $pg_yaml: }
@@ -43,7 +45,7 @@ class grid_pool_accounts::simple(
 ---
 <% @accounts.keys.sort.each do |vo|
   count = @accounts[vo]["count"].to_i
-  pgroup = @accounts[vo].has_key?("group") ? @accounts[vo]["group"] : (@single_group ? vo : nil)
+  pgroup = @accounts[vo].has_key?("group") ? @accounts[vo]["group"] : (@poolgroups ? vo : nil)
 -%>
 <%= vo %>:
   account_number_start: "<%= sprintf("%0#{@id_width}i", @id_start) %>"
