@@ -1,6 +1,6 @@
 define grid_pool_accounts::pool_group (
   $group = $title,
-  $gid   = undef,
+  $gid   = [],
   $roles = [],) {
   group { $group:
     ensure => present,
