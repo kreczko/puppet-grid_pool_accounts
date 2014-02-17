@@ -4,7 +4,7 @@
 #
 # === Parameters:
 #
-# [*accounts*]
+# [*poolaccounts*]
 #       This is a hash which defines the sets of pool accounts that should be
 #       created. The hash key defines the name of the set and the value is
 #       another hash with the configuration options for each set of accounts.
@@ -39,7 +39,7 @@
 #   id_start   => 0,                # start with 0000 rather than 0001
 #   poolgroups => true,
 #   gridmapdir => '/etc/grid-security/gridmapdir',
-#   accounts   => {
+#   poolaccounts   => {
 #     atlas => {                    # uses 'atlas' as primary group
 #       uid_start => 10000,
 #       count     => 1000,          # 1000 accounts, highest ID is 0999
@@ -52,11 +52,12 @@
 #   },
 # }
 class grid_pool_accounts::simple(
-  $accounts     = {},
+  $poolaccounts = {},
   $id_width     = 3,
   $id_start     = 1,
   $poolgroups   = false,
   $gridmapdir   = undef,
+  $mapfiles     = false,
 ) {
   if $gridmapdir {
     file { $gridmapdir:
@@ -71,14 +72,14 @@ class grid_pool_accounts::simple(
 
   $pg_yaml = inline_template('
 ---
-<% @accounts.keys.sort.each do |vo|
-  pgroup = @accounts[vo].has_key?("group") ? @accounts[vo]["group"] : (@poolgroups ? vo : nil)
+<% @poolaccounts.keys.sort.each do |vo|
+  pgroup = @poolaccounts[vo].has_key?("group") ? @poolaccounts[vo]["group"] : (@poolgroups ? vo : nil)
   if pgroup
 -%>
 <%= pgroup %>:
     <%- @pg_options.each do |opt|
-      if @accounts[vo].has_key?(opt) -%>
-  <%= opt %>: <%= @accounts[vo][opt] %>
+      if @poolaccounts[vo].has_key?(opt) -%>
+  <%= opt %>: <%= @poolaccounts[vo][opt] %>
       <%- end
     end -%>
 <%- end
@@ -96,15 +97,15 @@ end -%>
   # it's causing problem with the range calls in grid_pool_accounts, the ruby process will run out of memory and die
   $pa_yaml = inline_template('
 ---
-<% @accounts.keys.sort.each do |vo|
-  count = @accounts[vo]["count"].to_i
-  pgroup = @accounts[vo].has_key?("group") ? @accounts[vo]["group"] : (@poolgroups ? vo : nil)
+<% @poolaccounts.keys.sort.each do |vo|
+  count = @poolaccounts[vo]["count"].to_i
+  pgroup = @poolaccounts[vo].has_key?("group") ? @poolaccounts[vo]["group"] : (@poolgroups ? vo : nil)
 -%>
 <%= vo %>:
   account_number_start: "<%= sprintf("%0#{@id_width}i", @id_start) %>"
   account_number_end: "<%= sprintf("%0#{@id_width}i", @id_start.to_i + count - 1) %>"
-  user_ID_number_start: "<%= @accounts[vo]["uid_start"] %>"
-  user_ID_number_end: "<%= @accounts[vo]["uid_start"].to_i + count - 1 %>"
+  user_ID_number_start: "<%= @poolaccounts[vo]["uid_start"] %>"
+  user_ID_number_end: "<%= @poolaccounts[vo]["uid_start"].to_i + count - 1 %>"
   <%- if pgroup -%>
   primary_group: <%= pgroup %>
   <%- end -%>
@@ -112,8 +113,8 @@ end -%>
   gridmapdir: <%= @gridmapdir %>
   <%- end -%>
   <%- @pa_options.each do |opt|
-    if @accounts[vo].has_key?(opt) -%>
-  <%= opt %>: <%= @accounts[vo][opt] %>
+    if @poolaccounts[vo].has_key?(opt) -%>
+  <%= opt %>: <%= @poolaccounts[vo][opt] %>
     <%- end
   end -%>
 <%- end -%>
@@ -121,4 +122,25 @@ end -%>
 #  notify { $pa_yaml: }
   $accountdata = parseyaml($pa_yaml)
   create_resources('grid_pool_accounts', $accountdata)
+
+  if $mapfiles {
+    $mf_yaml = inline_template('
+---
+<% @poolaccounts.keys.sort.each do |vo|
+  if @poolaccounts[vo].has_key?("role") -%>
+<%= @poolaccounts[vo]["role"] %>:
+    <%- if @poolaccounts[vo].has_key?("group") -%>
+  group: <%= @poolaccounts[vo]["group"] %>
+  account: .<%= vo %>
+    <%- else -%>
+  group: <%= vo %>
+    <%- end -%>
+<%- end
+end -%>
+')
+  notify { "mf_yaml: ${mf_yaml}": }
+  $gmdata = parseyaml($mf_yaml)
+  create_resources('grid_pool_accounts::gmapfile', $gmdata)
+  class { 'grid_pool_accounts::gmapfiles': }
+  }
 }
