@@ -1,9 +1,62 @@
+# == Class: grid_pool_accounts::simple
+#
+# A wrapper class to make creating pool accounts and pool groups easier.
+#
+# === Parameters:
+#
+# [*accounts*]
+#       This is a hash which defines the sets of pool accounts that should be
+#       created. The hash key defines the name of the set and the value is
+#       another hash with the configuration options for each set of accounts.
+#       See 'Accounts Definiton' below for a description of the hash contents.
+# [*id_width*]
+#       Defines how many digits should be used for the pool account ID.
+#       The default width is 3 which creates 3 digit IDs, e.g. 027.
+# [*id_start*]
+#       Defines at which number the pool account IDs should start.
+#       The default is 1 which means the IDs start at 001.
+# [*poolgroups*]
+#       Specifies whether pool groups should be used for the pool accounts.
+#       The default is false, every pool account will have its own primary
+#       group. If it is set to true then every set of pool accounts will use
+#       the same primary group. The name of the set is used as group name
+#       unless a different group name is defined in the accounts hash.
+#       A group definition in the pool account configuration (accounts)
+#       overrides this option for the set of pool accounts for which it is
+#       defined.
+# [*gridmapdir*]
+#       Specifies the path of the gridmapdir. If it is defined then the
+#       gridmapdir file for each pool account is created in that directory.
+#
+# === Accounts Definition:
+#
+#
+#
+# === Example:
+#
+# class { grid_pool_accounts::simple:
+#   id_width   => 4,                # use 0000 to 9999 as IDs
+#   id_start   => 0,                # start with 0000 rather than 0001
+#   poolgroups => true,
+#   gridmapdir => '/etc/grid-security/gridmapdir',
+#   accounts   => {
+#     atlas => {                    # uses 'atlas' as primary group
+#       uid_start => 10000,
+#       count     => 1000,          # 1000 accounts, highest ID is 0999
+#     },
+#     northg  => {
+#       uid_start => 12000,
+#       count     => 50,            # 50 accounts, highest ID is 0050
+#       group     => 'northgrid',   # use northgrid as primary group, not northg
+#     }
+#   },
+# }
 class grid_pool_accounts::simple(
+  $accounts     = {},
   $id_width     = 3,
   $id_start     = 1,
   $poolgroups   = false,
   $gridmapdir   = undef,
-  $accounts     = {},
 ) {
   if $gridmapdir {
     file { $gridmapdir:
