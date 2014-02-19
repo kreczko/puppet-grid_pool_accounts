@@ -12,4 +12,11 @@ class grid_pool_accounts::gmapfiles(
     mode  => '0644',
     order => 'alpha',
   }
+  file { '/etc/grid-security/voms-grid-mapfile':
+    ensure => 'present',
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0644',
+    source => 'file:///etc/grid-security/grid-mapfile',
+  }
 }

@@ -138,7 +138,7 @@ end -%>
 <%- end
 end -%>
 ')
-  notify { "mf_yaml: ${mf_yaml}": }
+# notify { "mf_yaml: ${mf_yaml}": }
   $gmdata = parseyaml($mf_yaml)
   create_resources('grid_pool_accounts::gmapfile', $gmdata)
   class { 'grid_pool_accounts::gmapfiles': }

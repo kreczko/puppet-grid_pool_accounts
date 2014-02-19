@@ -4,7 +4,6 @@ define grid_pool_accounts::gmapfile(
   $account = undef,
 ) {
   $rid = regsubst($role, '[/=]', '_', 'G')
-  notify { "rid: ${rid}": }
   concat::fragment { "gridmapfile_${rid}":
     target  => '/etc/grid-security/grid-mapfile',
     order   => $rid,
