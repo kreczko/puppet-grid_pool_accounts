@@ -13,6 +13,7 @@
 #    groups        => [ 'cms'],
 #  }
 define grid_pool_accounts::pool_account (
+  $ensure                  = 'present',
   $username                = $title,
   $password                = '*NP*',
   $shell                   = '/bin/bash',
@@ -21,27 +22,29 @@ define grid_pool_accounts::pool_account (
   $primary_group           = undef,
   $uid                     = undef,
   $groups                  = [],
-  $ensure                  = present,
-  $comment                 = "mapped user for group $primary_group",
-  $create_gridmapdir_entry = false) {
+  $comment                 = "mapped user for group ${primary_group}",
+  $create_gridmapdir_entry = false,
+  $gridmapdir              = '/etc/grid-security/gridmapdir',
+) {
   case $ensure {
-    present : {
-      $dir_ensure = directory
+    'present': {
+      $dir_ensure = 'directory'
       $dir_owner  = $username
       $dir_group  = $primary_group
-      if $manage_home {
-        User[$title] -> File["${title}_home"]
-      }
-
-      if !defined(Group[$primary_group]) {
-        err("Primary group '$primary_group' is not defined.")
+      if $primary_group {
+        Group[$primary_group] -> User[$title]
       }
     }
-    absent  : {
-      $dir_ensure = absent
+    'absent': {
+      $dir_ensure = 'absent'
       $dir_owner  = undef
       $dir_group  = undef
-      File["${title}_home"] -> User[$title]
+      # removing users / groups inverses the relationship between them, meaning
+      # the group requires the user because the users have to be removed before
+      # the group can be removed: http://projects.puppetlabs.com/issues/9622
+      if $primary_group {
+        User[$title] -> Group[$primary_group]
+      }
     }
     default : {
       err("Invalid value given for ensure: ${ensure}. Must be one of present,absent."
@@ -62,21 +65,10 @@ define grid_pool_accounts::pool_account (
     managehome => $manage_home,
   }
 
-  if $manage_home {
-    file { "${title}_home":
-      ensure => $dir_ensure,
-      path   => $home_dir,
-      owner  => $dir_owner,
-      group  => $dir_group,
-      mode   => 0700;
-    }
-  }
-
   if $create_gridmapdir_entry {
-    file { "/etc/grid-security/gridmapdir/${title}":
-      ensure  => present,
-#      require => File['/etc/grid-security/gridmapdir'],
+    file { "${gridmapdir}/${title}":
+      ensure  => $ensure,
+      require => File[$gridmapdir],
     }
   }
-
 }
