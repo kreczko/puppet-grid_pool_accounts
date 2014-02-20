@@ -11,38 +11,37 @@
 # Sample Usage:
 #
 define grid_pool_accounts (
-  $account_prefix          = $title,
+  $vo_prefix               = $title,
+  $grid_users_conf         = true,
+  $users_conf              = '/etc/puppet/files/grid/users.conf',
   $account_number_start    = '000',
   $account_number_end      = '001',
   $user_ID_number_start    = 90000,
   $user_ID_number_end      = 90001,
-  $primary_group           = undef,
+  $primary_group           = $title,
   $groups                  = [],
   $comment                 = "mapped user for group ${title}",
   $create_home_dir         = true,
-  $ensure                  = 'present',
-  $gridmapdir              = undef,
+  $create_gridmapdir_entry = false,
 ) {
-  $users     = range("${account_prefix}${account_number_start}", "${account_prefix}${account_number_end}")
-  $uids      = range("${user_ID_number_start}", "${user_ID_number_end}")
-  $uid_size  = size($uids)
-  $user_size = size($users)
 
-  if $uid_size == $user_size {
-    $defaults = {
-      manage_home   => $create_home_dir,
-      primary_group => $primary_group,
-      groups        => $groups,
-      gridmapdir    => $gridmapdir,
-      ensure        => $ensure,
+  if $grid_users_conf {
+    grid_pool_accounts::create_pool_accounts_from_usersconf { $vo_prefix:
+      users_conf              => $users_conf,
+      create_home_dir         => $create_home_dir,
+      create_gridmapdir_entry => $create_gridmapdir_entry,
     }
-
-    $accounts = create_account_hash($users, $uids)
-    create_resources('grid_pool_accounts::pool_account', $accounts, $defaults)
-
   } else {
-    notify { "grid_pool_accounts_error_${title}":
-      message => "UID range is not the same as account range. UID range: ${user_ID_number_start} - ${user_ID_number_end}, account range: ${account_number_start} - ${account_number_end}",
+    grid_pool_accounts::create_pool_accounts { $vo_prefix:
+      account_number_start    => $account_number_start,
+      account_number_end      => $account_number_end,
+      user_ID_number_start    => $user_ID_number_start,
+      user_ID_number_end      => $user_ID_number_end,
+      primary_group           => $primary_group,
+      groups                  => $groups,
+      comment                 => $comment,
+      manage_home             => $create_home_dir,
+      create_gridmapdir_entry => $create_gridmapdir_entry,
     }
   }
 }

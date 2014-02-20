@@ -13,6 +13,7 @@
 #    groups        => [ 'cms'],
 #  }
 define grid_pool_accounts::pool_account (
+  $ensure                  = 'present',
   $username                = $title,
   $password                = '*NP*',
   $shell                   = '/bin/bash',
@@ -21,9 +22,9 @@ define grid_pool_accounts::pool_account (
   $primary_group           = undef,
   $uid                     = undef,
   $groups                  = [],
-  $ensure                  = 'present',
-  $comment                 = "mapped user for group ${title}",
-  $gridmapdir              = undef,
+  $comment                 = "mapped user for group ${primary_group}",
+  $create_gridmapdir_entry = false,
+  $gridmapdir              = '/etc/grid-security/gridmapdir',
 ) {
   case $ensure {
     'present': {
@@ -64,7 +65,7 @@ define grid_pool_accounts::pool_account (
     managehome => $manage_home,
   }
 
-  if $gridmapdir {
+  if $create_gridmapdir_entry {
     file { "${gridmapdir}/${title}":
       ensure  => $ensure,
       require => File[$gridmapdir],

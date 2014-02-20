@@ -88,7 +88,7 @@ end -%>
 
 #  notify { $pg_yaml: }
   $groupdata = parseyaml($pg_yaml)
-  create_resources('grid_pool_accounts::pool_group', $groupdata)
+  create_resources('group', $groupdata)
 
   $pa_options = [ 'ensure' ]
 
@@ -121,7 +121,7 @@ end -%>
 ')
 #  notify { $pa_yaml: }
   $accountdata = parseyaml($pa_yaml)
-  create_resources('grid_pool_accounts', $accountdata)
+  create_resources('grid_pool_accounts::create_pool_accounts', $accountdata)
 
   if $mapfiles {
     $mf_yaml = inline_template('
