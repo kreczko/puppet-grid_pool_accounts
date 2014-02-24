@@ -52,12 +52,13 @@
 #   },
 # }
 class grid_pool_accounts::simple(
+  $enable       = [],
+  $accounts     = {},
   $poolaccounts = {},
   $id_width     = 3,
   $id_start     = 1,
   $poolgroups   = false,
   $gridmapdir   = undef,
-  $mapfiles     = false,
 ) {
   if $gridmapdir {
     file { $gridmapdir:
@@ -68,15 +69,18 @@ class grid_pool_accounts::simple(
     }
   }
 
-  $pg_options = [ 'ensure', 'gid' ]
+  $vos = unique(flatten([$enable, keys($poolaccounts)]))
+
+  $pg_options = [ 'gid' ]
 
   $pg_yaml = inline_template('
 ---
-<% @poolaccounts.keys.sort.each do |vo|
-  pgroup = @poolaccounts[vo].has_key?("group") ? @poolaccounts[vo]["group"] : (@poolgroups ? vo : nil)
+<% @vos.each do |vo|
+  pgroup = @poolaccounts[vo].has_key?("pgroup") ? @poolaccounts[vo]["pgroup"] : (@poolgroups ? vo : nil)
   if pgroup
 -%>
 <%= pgroup %>:
+  ensure: <%= (@enable.include?(vo) ? "present" : "absent") %>
     <%- @pg_options.each do |opt|
       if @poolaccounts[vo].has_key?(opt) -%>
   <%= opt %>: <%= @poolaccounts[vo][opt] %>
@@ -86,22 +90,23 @@ class grid_pool_accounts::simple(
 end -%>
 ')
 
-#  notify { $pg_yaml: }
+  notify { "${title} pg_yaml: ${pg_yaml}": }
   $groupdata = parseyaml($pg_yaml)
-  create_resources('group', $groupdata)
+  create_resources('@group', $groupdata)
 
-  $pa_options = [ 'ensure' ]
+#  $pa_options = [ 'ensure' ]
 
   # IMPORTANT: the account id numbers starting with a 0 have to be quoted in the yaml, otherwise
   # the create_resources call will fail
   # it's causing problem with the range calls in grid_pool_accounts, the ruby process will run out of memory and die
   $pa_yaml = inline_template('
 ---
-<% @poolaccounts.keys.sort.each do |vo|
+<% @vos.each do |vo|
   count = @poolaccounts[vo]["count"].to_i
-  pgroup = @poolaccounts[vo].has_key?("group") ? @poolaccounts[vo]["group"] : (@poolgroups ? vo : nil)
+  pgroup = @poolaccounts[vo].has_key?("pgroup") ? @poolaccounts[vo]["pgroup"] : (@poolgroups ? vo : nil)
 -%>
 <%= vo %>:
+  ensure: <%= (@enable.include?(vo) ? "present" : "absent") %>
   account_number_start: "<%= sprintf("%0#{@id_width}i", @id_start) %>"
   account_number_end: "<%= sprintf("%0#{@id_width}i", @id_start.to_i + count - 1) %>"
   user_ID_number_start: "<%= @poolaccounts[vo]["uid_start"] %>"
@@ -112,35 +117,36 @@ end -%>
   <%- if @gridmapdir -%>
   gridmapdir: <%= @gridmapdir %>
   <%- end -%>
-  <%- @pa_options.each do |opt|
-    if @poolaccounts[vo].has_key?(opt) -%>
-  <%= opt %>: <%= @poolaccounts[vo][opt] %>
-    <%- end
-  end -%>
 <%- end -%>
 ')
-#  notify { $pa_yaml: }
+#  <%- @pa_options.each do |opt|
+#    if @poolaccounts[vo].has_key?(opt) -%>
+#  <%= opt %>: <%= @poolaccounts[vo][opt] %>
+#    <%- end
+#  end -%>
+  notify { "${title} pa_yaml: ${pa_yaml}": }
   $accountdata = parseyaml($pa_yaml)
-  create_resources('grid_pool_accounts::create_pool_accounts', $accountdata)
+  create_resources('@grid_pool_accounts::create_pool_accounts', $accountdata)
 
-  if $mapfiles {
-    $mf_yaml = inline_template('
+  $mf_yaml = inline_template('
 ---
-<% @poolaccounts.keys.sort.each do |vo|
+<% i=1
+@vos.each do |vo|
   if @poolaccounts[vo].has_key?("role") -%>
 <%= @poolaccounts[vo]["role"] %>:
-    <%- if @poolaccounts[vo].has_key?("group") -%>
-  group: <%= @poolaccounts[vo]["group"] %>
+  ensure: <%= (@enable.include?(vo) ? "present" : "absent") %>
+    <%- if @poolaccounts[vo].has_key?("pgroup") -%>
+  group: <%= @poolaccounts[vo]["pgroup"] %>
+  order: <%= i %>
   account: .<%= vo %>
     <%- else -%>
   group: <%= vo %>
     <%- end -%>
 <%- end
+  i=i+1
 end -%>
 ')
-# notify { "mf_yaml: ${mf_yaml}": }
+  notify { "${title} mf_yaml: ${mf_yaml}": }
   $gmdata = parseyaml($mf_yaml)
-  create_resources('grid_pool_accounts::gmapfile', $gmdata)
-  class { 'grid_pool_accounts::gmapfiles': }
-  }
+  create_resources('@grid_pool_accounts::gmapfile', $gmdata)
 }
