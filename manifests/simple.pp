@@ -9,6 +9,9 @@
 #       created. The hash key defines the name of the set and the value is
 #       another hash with the configuration options for each set of accounts.
 #       See 'Accounts Definiton' below for a description of the hash contents.
+# [*accounts*]
+#       This is a hash which defines a number of single accounts that can be
+#       used to map groups of users to single accounts.
 # [*id_width*]
 #       Defines how many digits should be used for the pool account ID.
 #       The default width is 3 which creates 3 digit IDs, e.g. 027.
@@ -52,13 +55,14 @@
 #   },
 # }
 class grid_pool_accounts::simple(
-  $enable       = [],
-  $accounts     = {},
-  $poolaccounts = {},
-  $id_width     = 3,
-  $id_start     = 1,
-  $poolgroups   = false,
-  $gridmapdir   = undef,
+  $enable          = [],
+  $poolaccounts    = {},
+  $accounts        = {},
+  $groups          = {},
+  $id_width        = 3,
+  $id_start        = 1,
+  $use_auto_groups = false,
+  $gridmapdir      = undef,
 ) {
   if $gridmapdir {
     file { $gridmapdir:
@@ -69,41 +73,24 @@ class grid_pool_accounts::simple(
     }
   }
 
-  $vos = unique(flatten([$enable, keys($poolaccounts)]))
-
-  $pg_options = [ 'gid' ]
-
-  $pg_yaml = inline_template('
----
-<% @vos.each do |vo|
-  pgroup = @poolaccounts[vo].has_key?("pgroup") ? @poolaccounts[vo]["pgroup"] : (@poolgroups ? vo : nil)
-  if pgroup
--%>
-<%= pgroup %>:
-  ensure: <%= (@enable.include?(vo) ? "present" : "absent") %>
-    <%- @pg_options.each do |opt|
-      if @poolaccounts[vo].has_key?(opt) -%>
-  <%= opt %>: <%= @poolaccounts[vo][opt] %>
-      <%- end
-    end -%>
-<%- end
-end -%>
-')
-
-  notify { "${title} pg_yaml: ${pg_yaml}": }
-  $groupdata = parseyaml($pg_yaml)
+  $groupdata = simple_create_group_hash($groups, $enable, $use_auto_groups, $poolaccounts, $accounts)
   create_resources('@group', $groupdata)
+
+  $pool_vos = unique(flatten([$enable, keys($poolaccounts)]))
+  $single_vos = unique(flatten([$enable, keys($accounts)]))
 
 #  $pa_options = [ 'ensure' ]
 
   # IMPORTANT: the account id numbers starting with a 0 have to be quoted in the yaml, otherwise
   # the create_resources call will fail
-  # it's causing problem with the range calls in grid_pool_accounts, the ruby process will run out of memory and die
+  # it's causing problem with the range calls in grid_pool_accounts,
+  # the ruby process on the server will run out of memory and die
   $pa_yaml = inline_template('
 ---
-<% @vos.each do |vo|
-  count = @poolaccounts[vo]["count"].to_i
-  pgroup = @poolaccounts[vo].has_key?("pgroup") ? @poolaccounts[vo]["pgroup"] : (@poolgroups ? vo : nil)
+<% @pool_vos.each do |vo|
+  if @poolaccounts.has_key?(vo)
+    count = @poolaccounts[vo]["count"].to_i
+    pgroup = @poolaccounts[vo].has_key?("pgroup") ? @poolaccounts[vo]["pgroup"] : (@poolgroups ? vo : nil)
 -%>
 <%= vo %>:
   ensure: <%= (@enable.include?(vo) ? "present" : "absent") %>
@@ -111,13 +98,14 @@ end -%>
   account_number_end: "<%= sprintf("%0#{@id_width}i", @id_start.to_i + count - 1) %>"
   user_ID_number_start: "<%= @poolaccounts[vo]["uid_start"] %>"
   user_ID_number_end: "<%= @poolaccounts[vo]["uid_start"].to_i + count - 1 %>"
-  <%- if pgroup -%>
+    <%- if pgroup -%>
   primary_group: <%= pgroup %>
-  <%- end -%>
-  <%- if @gridmapdir -%>
+    <%- end -%>
+    <%- if @gridmapdir -%>
   gridmapdir: <%= @gridmapdir %>
-  <%- end -%>
-<%- end -%>
+    <%- end -%>
+<%- end
+end -%>
 ')
 #  <%- @pa_options.each do |opt|
 #    if @poolaccounts[vo].has_key?(opt) -%>
@@ -131,7 +119,7 @@ end -%>
   $mf_yaml = inline_template('
 ---
 <% i=1
-@vos.each do |vo|
+@pool_vos.each do |vo|
   if @poolaccounts[vo].has_key?("role") -%>
 <%= @poolaccounts[vo]["role"] %>:
   ensure: <%= (@enable.include?(vo) ? "present" : "absent") %>
