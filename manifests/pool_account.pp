@@ -28,7 +28,6 @@ define grid_pool_accounts::pool_account (
 ) {
   case $ensure {
     'present': {
-      $dir_ensure = 'directory'
       $dir_owner  = $username
       $dir_group  = $primary_group
       if $primary_group {
@@ -36,7 +35,6 @@ define grid_pool_accounts::pool_account (
       }
     }
     'absent': {
-      $dir_ensure = 'absent'
       $dir_owner  = undef
       $dir_group  = undef
       # removing users / groups inverses the relationship between them, meaning
@@ -47,8 +45,7 @@ define grid_pool_accounts::pool_account (
       }
     }
     default : {
-      err("Invalid value given for ensure: ${ensure}. Must be one of present,absent."
-      )
+      err("Invalid value given for ensure: ${ensure}. Must be one of present, absent.")
     }
   }
 

@@ -23,6 +23,7 @@ define grid_pool_accounts::create_pool_accounts (
 
   if $uid_size == $user_size {
     $defaults = {
+      ensure                  => $ensure,
       manage_home             => $manage_home,
       primary_group           => $primary_group,
       groups                  => $groups,
