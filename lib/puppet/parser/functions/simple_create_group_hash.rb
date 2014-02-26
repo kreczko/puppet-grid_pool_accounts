@@ -40,6 +40,7 @@ module Puppet::Parser::Functions
       else
         groupdef[group] = { 'ensure' => 'absent' }
       end
+      groupdef[group]['tag'] = 'grid_pool_accounts.simple.group'
     end
     groupdef
   end
