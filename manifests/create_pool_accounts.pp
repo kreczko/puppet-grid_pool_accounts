@@ -1,4 +1,4 @@
-# Define: create_grid_pool_accounts
+# Define: create_pool_accounts
 #
 define grid_pool_accounts::create_pool_accounts (
   $ensure                  = 'present',
@@ -16,28 +16,26 @@ define grid_pool_accounts::create_pool_accounts (
   $gridmapdir              = '/etc/grid-security/gridmapdir',
 ) {
 
-  $users     = range("${account_prefix}${account_number_start}", "${account_prefix}${account_number_end}")
-  $uids      = range("${user_ID_number_start}", "${user_ID_number_end}")
-  $uid_size  = size($uids)
-  $user_size = size($users)
+  # create virtual resources
+  grid_pool_accounts::virtual::create_pool_accounts { $title:
+    ensure               => $ensure,
+    account_prefix       => $account_prefix,
+    account_number_start => $account_number_start,
+    account_number_end   => $account_number_end,
+    user_ID_number_start => $user_ID_number_start,
+    user_ID_number_end   => $user_ID_number_end,
+    shell                => $shell,
+    manage_home          => $manage_home,
+    primary_group        => $primary_group,
+    groups               => $groups,
+    comment              => $comment,
+    gridmapdir           => $gridmapdir,
+  }
 
-  if $uid_size == $user_size {
-    $defaults = {
-      ensure                  => $ensure,
-      manage_home             => $manage_home,
-      primary_group           => $primary_group,
-      groups                  => $groups,
-      comment                 => $comment,
-      create_gridmapdir_entry => $create_gridmapdir_entry,
-      gridmapdir              => $gridmapdir,
-    }
+  # collect virtual resources to create them
+  User<| tag == 'grid_pool_accounts::pool_account::useraccount' |>
 
-    $accounts = create_account_hash($users, $uids)
-    create_resources('grid_pool_accounts::pool_account', $accounts, $defaults)
-
-  } else {
-    notify { "create_grid_pool_accounts_error_${title}":
-      message => "UID range is not the same as account range. UID range: ${user_ID_number_start} - ${user_ID_number_end}, account range: ${account_number_start} - ${account_number_end}",
-    }
+  if $create_gridmapdir_entry {
+    File<| tag == 'grid_pool_accounts::pool_account::gridmapdir' |>
   }
 }

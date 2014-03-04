@@ -41,10 +41,18 @@
 # [*gridmapdir*]
 #       Specifies the path of the gridmapdir. If it is defined then the
 #       gridmapdir file for each pool account is created in that directory.
+# [*resources*]
+#       By default, all created resources are virtual. This array defines
+#       which of the virtual resources should be instantiated.
+#       Allowed values are: accounts, gridmapdir, gridmapfile
+# [*allow_remove*]
+#       Specifies whether to allow the removal of user accounts and groups.
+#       Allowing this has a significant negative impact on the speed of the
+#       puppet run.
 #
-# === Accounts Definition:
+# === Pool Accounts Definition:
 #
-#
+# === Single Accounts Definition:
 #
 # === Example:
 #
@@ -74,98 +82,119 @@ class grid_pool_accounts::simple(
   $id_width         = 3,
   $id_start         = 1,
   $use_auto_groups  = false,
-  $gridmapdir       = undef,
+  $gridmapdir       = '/etc/grid-security/gridmapdir',
+  $resources        = [],
+  $allow_remove     = false,
 ) {
 
-  if $gridmapdir {
+  $acc_defs = merge( { manage_home => true, }, $account_defaults)
+
+  # realise resources
+  if member($resources, 'accounts') {
+#   notify { "${title} realise accounts": }
+    Group<| tag == 'grid_pool_accounts::simple::group' |>
+    User<| tag == 'grid_pool_accounts::pool_account::useraccount' |>
+  }
+  if member($resources, 'gridmapdir') {
+#    notify { "${title} realise gridmapdir": }
     file { $gridmapdir:
       ensure => 'directory',
       owner  => 'root',
       group  => 'root',
       mode   => '0755',
     }
+    File<| tag == 'grid_pool_accounts::pool_account::gridmapdir' |>
   }
-  $acc_defs = merge( { manage_home => true, }, $account_defaults)
+  if member($resources, 'gridmapfile') {
+#   notify { "${title} realise gridmapfile": }
+    Gmapfile<| |>
+    class { 'grid_pool_accounts::gmapfiles': }
+  }
 
-  $groupdata = simple_create_group_hash($groups, $enable, $use_auto_groups, $poolaccounts, $accounts)
+  # compile all required group information and create / delete groups using virtual resources
+  $groupdata = simple_create_group_hash($groups, $enable, $use_auto_groups, $poolaccounts, $accounts, $allow_remove)
   create_resources('@group', $groupdata)
 
-  $pool_vos = unique(flatten([$enable, keys($poolaccounts)]))
-  $single_vos = unique(flatten([$enable, keys($accounts)]))
-
+  # compile all required pool account information and create / delete pool_accounts using virtual resources
   # IMPORTANT: the account id numbers starting with a 0 have to be quoted in the yaml, otherwise
   # the create_resources call will fail
   # it's causing problem with the range calls in grid_pool_accounts,
   # the ruby process on the server will run out of memory and die
   $pa_yaml = inline_template('
 ---
-<% @pool_vos.each do |vo|
+<% @poolaccounts.keys.each do |vo|
   if @poolaccounts.has_key?(vo)
     count = @poolaccounts[vo]["count"].to_i
-    pgroup = @poolaccounts[vo].has_key?("pgroup") ? @poolaccounts[vo]["pgroup"] : (@use_auto_groups ? vo : nil)
--%>
+    pgroup = @poolaccounts[vo].has_key?("pgroup") ? @poolaccounts[vo]["pgroup"] : vo
+    idstart = @poolaccounts[vo].has_key?("id_start") ? @poolaccounts[vo]["id_start"] : @id_start
+    enabled = @enable.include?(vo)
+    if enabled or @allow_remove -%>
 <%= vo %>:
-  tag: grid_pool_accounts.simple.pool
-  ensure: <%= (@enable.include?(vo) ? "present" : "absent") %>
-  account_number_start: "<%= sprintf("%0#{@id_width}i", @id_start) %>"
-  account_number_end: "<%= sprintf("%0#{@id_width}i", @id_start.to_i + count - 1) %>"
+  ensure: <%= (enabled ? "present" : "absent") %>
+  gridmapdir: <%= @gridmapdir %>
+  account_number_start: "<%= sprintf("%0#{@id_width}i", idstart) %>"
+  account_number_end: "<%= sprintf("%0#{@id_width}i", idstart.to_i + count - 1) %>"
   user_ID_number_start: "<%= @poolaccounts[vo]["uid_start"] %>"
   user_ID_number_end: "<%= @poolaccounts[vo]["uid_start"].to_i + count - 1 %>"
-    <%- if pgroup -%>
+      <%- if pgroup -%>
   primary_group: <%= pgroup %>
-    <%- end -%>
-    <%- if @poolaccounts[vo].has_key?("sgroup") -%>
+      <%- end -%>
+      <%- if @poolaccounts[vo].has_key?("sgroup") -%>
   groups:
-      <%- @poolaccounts[vo]["sgroup"].split(",").each do |sg| -%>
+        <%- @poolaccounts[vo]["sgroup"].split(",").each do |sg| -%>
     - <%= sg %>
-      <%- end
-    end -%>
-    <%- @acc_defs.keys.each do |opt| -%>
+        <%- end
+      end -%>
+      <%- @acc_defs.keys.each do |opt| -%>
   <%= opt %>: <%= @acc_defs[opt] %>
-    <%- end -%>
-    <%- if @gridmapdir -%>
-  gridmapdir: <%= @gridmapdir %>
-    <%- end -%>
+      <%- end -%>
 <%- end
+  end
 end -%>
 ')
 #  notify { "${title} pa_yaml: ${pa_yaml}": }
   $accountdata = parseyaml($pa_yaml)
-  create_resources('@grid_pool_accounts::create_pool_accounts', $accountdata)
+  create_resources('grid_pool_accounts::virtual::create_pool_accounts', $accountdata)
 
+  # compile all required single account information and create / delete single accounts using virtual resources
   $sa_options = [ 'uid', 'comment' ]
   $sa_yaml = inline_template('
 ---
-<% @single_vos.each do |ac|
+<% @accounts.keys.each do |ac|
   if @accounts.has_key?(ac)
-    pgroup = @accounts[ac].has_key?("pgroup") ? @accounts[ac]["pgroup"] : (@use_auto_groups ? ac : nil) -%>
+    pgroup = @accounts[ac].has_key?("pgroup") ? @accounts[ac]["pgroup"] : (@use_auto_groups ? ac : nil)
+    enabled = @enable.include?(ac)
+    if enabled or @allow_remove -%>
 <%= ac %>:
-  tag: grid_pool_accounts.simple.single
-  ensure: <%= (@enable.include?(ac) ? "present" : "absent") %>
-    <%- if pgroup -%>
+  ensure: <%= (enabled ? "present" : "absent") %>
+  gridmapdir: <%= @gridmapdir %>
+      <%- if pgroup -%>
   primary_group: <%= pgroup %>
-    <%- end -%>
-    <%- if @accounts[ac].has_key?("sgroup") -%>
+      <%- end -%>
+      <%- if @accounts[ac].has_key?("sgroup") -%>
   groups:
-      <%- @accounts[ac]["sgroup"].split(",").each do |sg| -%>
+        <%- @accounts[ac]["sgroup"].split(",").each do |sg| -%>
     - <%= sg %>
-      <%- end
-    end -%>
-    <%- @sa_options.each do |opt|
-      if @accounts[ac].has_key?(opt) -%>
+        <%- end
+      end -%>
+      <%- @sa_options.each do |opt|
+        if @accounts[ac].has_key?(opt) -%>
   <%= opt %>: <%= @accounts[ac][opt] %>
-      <%- end
-    end -%>
-    <%- @acc_defs.keys.each do |opt| -%>
+        <%- end
+      end -%>
+      <%- @acc_defs.keys.each do |opt| -%>
   <%= opt %>: <%= @acc_defs[opt] %>
-    <%- end -%>
+      <%- end -%>
   <%- end
+  end
 end -%>
 ')
 #  notify { "${title} sa_yaml: ${sa_yaml}": }
   $saccountdata = parseyaml($sa_yaml)
-  create_resources('@grid_pool_accounts::pool_account', $saccountdata)
+  create_resources('grid_pool_accounts::virtual::pool_account', $saccountdata)
 
+  # compile all required
+  # compile all required VO mapping information and create / delete the entries using virtual resources
   $mf_yaml = inline_template('
 ---
 <% order = {}
@@ -174,7 +203,7 @@ i = 1
   order[vo] = i
   i = i + 1
 end
-@pool_vos.each do |vo|
+@poolaccounts.keys.each do |vo|
   if @poolaccounts.has_key?(vo)
     if @poolaccounts[vo].has_key?("role")
       enabled = @enable.include?(vo) -%>
@@ -190,7 +219,7 @@ end
     <%- end
   end
 end -%>
-<% @single_vos.each do |ac|
+<% @accounts.keys.each do |ac|
   if @accounts.has_key?(ac)
     if @accounts[ac].has_key?("role")
         enabled = @enable.include?(ac) -%>
@@ -207,7 +236,7 @@ end -%>
   end
 end -%>
 ')
-  notify { "${title} mf_yaml: ${mf_yaml}": }
+#  notify { "${title} mf_yaml: ${mf_yaml}": }
   $gmdata = parseyaml($mf_yaml)
   create_resources('@grid_pool_accounts::gmapfile', $gmdata)
 }

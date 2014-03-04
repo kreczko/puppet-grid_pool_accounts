@@ -4,6 +4,7 @@ define grid_pool_accounts::create_pool_accounts_from_usersconf (
   $vo                      = $title,
   $users_conf              = '/etc/puppet/files/grid/users.conf',
   $create_home_dir         = true,
+  $gridmapdir              = '/etc/grid-security/gridmapdir',
   $create_gridmapdir_entry = false,
 ) {
 
@@ -23,14 +24,16 @@ define grid_pool_accounts::create_pool_accounts_from_usersconf (
   $defaults = {
     manage_home             => $create_home_dir,
     primary_group           => $primary_gname,
+    gridmapdir              => $gridmapdir,
     create_gridmapdir_entry => $create_gridmapdir_entry,
   }
 
   $defaults_pilot = {
-      manage_home             => $create_home_dir,
-      primary_group           => $pilot_gname,
-      groups                  => $primary_gname,
-      create_gridmapdir_entry => $create_gridmapdir_entry,
+    manage_home             => $create_home_dir,
+    primary_group           => $pilot_gname,
+    groups                  => $primary_gname,
+    gridmapdir              => $gridmapdir,
+    create_gridmapdir_entry => $create_gridmapdir_entry,
   }
 
   if $uid_size == $user_size {

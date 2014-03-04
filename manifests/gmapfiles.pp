@@ -4,12 +4,14 @@ class grid_pool_accounts::gmapfiles(
     owner => 'root',
     group => 'root',
     mode  => '0644',
+    force => true,  # allow empty configuration files
 #   order => 'alpha',
   }
   concat { '/etc/grid-security/groupmapfile':
     owner => 'root',
     group => 'root',
     mode  => '0644',
+    force => true,
 #   order => 'alpha',
   }
   # not really needed ?

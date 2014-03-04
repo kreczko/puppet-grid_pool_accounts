@@ -22,13 +22,24 @@ define grid_pool_accounts (
   $groups                  = [],
   $comment                 = "mapped user for group ${title}",
   $create_home_dir         = true,
+  $gridmapdir              = '/etc/grid-security/gridmapdir',
   $create_gridmapdir_entry = false,
 ) {
+
+  if $create_gridmapdir_entry {
+    file { $gridmapdir:
+      ensure => 'directory',
+      owner  => 'root',
+      group  => 'root',
+      mode   => '0755',
+    }
+  }
 
   if $grid_users_conf {
     grid_pool_accounts::create_pool_accounts_from_usersconf { $vo_prefix:
       users_conf              => $users_conf,
       create_home_dir         => $create_home_dir,
+      gridmapdir              => $gridmapdir,
       create_gridmapdir_entry => $create_gridmapdir_entry,
     }
   } else {
@@ -41,6 +52,7 @@ define grid_pool_accounts (
       groups                  => $groups,
       comment                 => $comment,
       manage_home             => $create_home_dir,
+      gridmapdir              => $gridmapdir,
       create_gridmapdir_entry => $create_gridmapdir_entry,
     }
   }
