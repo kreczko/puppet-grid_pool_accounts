@@ -23,49 +23,29 @@ define grid_pool_accounts::pool_account (
   $uid                     = undef,
   $groups                  = [],
   $comment                 = "mapped user for group ${primary_group}",
-  $create_gridmapdir_entry = false,
   $gridmapdir              = '/etc/grid-security/gridmapdir',
+  $create_gridmapdir_entry = false,
 ) {
-  case $ensure {
-    'present': {
-      $dir_owner  = $username
-      $dir_group  = $primary_group
-      if $primary_group {
-        Group[$primary_group] -> User[$title]
-      }
-    }
-    'absent': {
-      $dir_owner  = undef
-      $dir_group  = undef
-      # removing users / groups inverses the relationship between them, meaning
-      # the group requires the user because the users have to be removed before
-      # the group can be removed: http://projects.puppetlabs.com/issues/9622
-      if $primary_group {
-        User[$title] -> Group[$primary_group]
-      }
-    }
-    default : {
-      err("Invalid value given for ensure: ${ensure}. Must be one of present, absent.")
-    }
+
+  # create virtual resources
+  grid_pool_accounts::virtual::pool_account { $title:
+    ensure        => $ensure,
+    username      => $username,
+    password      => $password,
+    shell         => $shell,
+    manage_home   => $manage_home,
+    home_dir      => $home_dir,
+    primary_group => $primary_group,
+    uid           => $uid,
+    groups        => $groups,
+    comment       => $comment,
+    gridmapdir    => $gridmapdir,
   }
 
-  user { $title:
-    ensure     => $ensure,
-    name       => $username,
-    comment    => $comment,
-    uid        => $uid,
-    password   => $password,
-    shell      => $shell,
-    gid        => $primary_group,
-    groups     => $groups,
-    home       => $home_dir,
-    managehome => $manage_home,
-  }
+  # collect virtual resources to create them
+  User<| tag == 'grid_pool_accounts::pool_account::useraccount' |>
 
   if $create_gridmapdir_entry {
-    file { "${gridmapdir}/${title}":
-      ensure  => $ensure,
-      require => File[$gridmapdir],
-    }
+    File<| tag == 'grid_pool_accounts::pool_account::gridmapdir' |>
   }
 }

@@ -3,6 +3,7 @@ module Puppet::Parser::Functions
     groups = args[0]
     enabled_vos = args[1]
     use_auto_groups = args[2]
+    allow_remove = args[5]
     raise(Puppet::ParseError, "simple_create_group_hash, first argument has to be a hash") unless groups.is_a?(Hash)
     raise(Puppet::ParseError, "simple_create_group_hash, second argument has to be an array") unless enabled_vos.is_a?(Array)
     raise(Puppet::ParseError, "simple_create_group_hash, fourth argument has to be a hash") unless args[3].is_a?(Hash)
@@ -15,7 +16,7 @@ module Puppet::Parser::Functions
       if all_accounts[vo].has_key?('pgroup')
         all_groups.push(all_accounts[vo]['pgroup'])
         enabled_groups.push(all_groups.last) if vo_enabled
-      elsif use_auto_groups
+      else
         # use the VO name as primary group name
         all_groups.push(vo)
         enabled_groups.push(vo) if vo_enabled
@@ -32,15 +33,20 @@ module Puppet::Parser::Functions
     all_groups.each do |group|
       if enabled_groups.include?(group)
         if use_auto_groups or groups.has_key?(group)
-          groupdef[group] = { 'ensure' => 'present' }
+          groupdef[group] = {
+            'ensure' => 'present',
+            'tag'    => 'grid_pool_accounts::simple::group',
+          }
           groupdef[group]['gid'] = groups[group] if groups and groups.has_key?(group)
         else
           raise(Puppet::ParseError, "simple_create_group_hash, ERROR: group #{group} is enabled, but not configured and automatic groups generation is disabled")
         end
-      else
-        groupdef[group] = { 'ensure' => 'absent' }
+      elsif allow_remove
+        groupdef[group] = {
+          'ensure' => 'absent',
+          'tag'    => 'grid_pool_accounts::simple::group',
+        }
       end
-      groupdef[group]['tag'] = 'grid_pool_accounts.simple.group'
     end
     groupdef
   end
