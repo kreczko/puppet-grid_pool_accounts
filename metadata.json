@@ -2,7 +2,7 @@
   "name": "grid_pool_accounts",
   "version": "0.1.1",
   "summary": "Puppet module for creating grid pool accounts",
-  "author": HEP-Puppet
+  "author": "HEP-Puppet",
   "description": "Puppet module for creating grid pool accounts",
   "dependencies": [
     {
