@@ -1,13 +1,12 @@
 {
-  "name": "kreczko-grid_pool_accounts",
-  "version": "0.0.1",
+  "name": "grid_pool_accounts",
+  "version": "0.1.1",
   "summary": "Puppet module for creating grid pool accounts",
-  "author": "kreczko",
   "description": "Puppet module for creating grid pool accounts",
   "dependencies": [
     {
       "name": "puppetlabs/stdlib",
-      "version_requirement": "\u003e\u003d4.1.0"
+      "version_requirement": "\u003e\u003d3.2.0"
     }
   ],
   "types": [],
