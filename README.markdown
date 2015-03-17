@@ -1,5 +1,7 @@
 # grid_pool_accounts #
 
+CI status: [![build status](https://travis-ci.org/HEP-Puppet/puppet-grid_pool_accounts.png)](https://travis-ci.org/HEP-Puppet/puppet-grid_pool_accounts)
+
 This module can create normal and pilot pool accounts by parsing users.conf file as described here
 https://twiki.cern.ch/twiki/bin/view/LCG/YaimGuide400#users_conf
 
