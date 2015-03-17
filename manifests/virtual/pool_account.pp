@@ -35,8 +35,8 @@ define grid_pool_accounts::virtual::pool_account (
   }
 
   @user { $username:
-    tag        => 'grid_pool_accounts::pool_account::useraccount',
     ensure     => $ensure,
+    tag        => 'grid_pool_accounts::pool_account::useraccount',
     name       => $username,
     comment    => $comment,
     uid        => $uid,
@@ -49,8 +49,8 @@ define grid_pool_accounts::virtual::pool_account (
   }
 
   @file { "${gridmapdir}/${username}":
-    tag     => 'grid_pool_accounts::pool_account::gridmapdir',
     ensure  => $ensure,
+    tag     => 'grid_pool_accounts::pool_account::gridmapdir',
     require => File[$gridmapdir],
   }
 }
