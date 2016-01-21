@@ -1,7 +1,7 @@
 define grid_pool_accounts::gmapfile(
   $ensure  = 'present',
   $role    = $title,
-  $group,
+  $group   = undef,
   $order   = 1,
   $account = undef,
 ) {

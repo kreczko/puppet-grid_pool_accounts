@@ -7,7 +7,7 @@ class grid_pool_accounts::edg_mkgridmap {
   $log_file = '/var/log/edg-mkgridmap.log'
   $output   = '/etc/grid-security/dn-grid-mapfile'
 
-  cron { edg_gridmap_cron:
+  cron { 'edg_gridmap_cron':
     command     => "(date; edg-mkgridmap --output=${output} --safe) >> ${log_file} 2>&1",
     minute      => '31',
     hour        => '0,6,12,18',
