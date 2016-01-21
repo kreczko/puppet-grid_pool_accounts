@@ -3,7 +3,8 @@
 	<name>grid_pool_accounts</name>
 	<comment></comment>
 	<projects>
-		<project>puppetlabs-stdlib</project>
+		<project>concat</project>
+		<project>stdlib</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
@@ -18,7 +19,7 @@
 		</buildCommand>
 	</buildSpec>
 	<natures>
-		<nature>org.cloudsmith.geppetto.pp.dsl.ui.puppetNature</nature>
+		<nature>com.puppetlabs.geppetto.pp.dsl.ui.puppetNature</nature>
 		<nature>org.eclipse.xtext.ui.shared.xtextNature</nature>
 	</natures>
 </projectDescription>

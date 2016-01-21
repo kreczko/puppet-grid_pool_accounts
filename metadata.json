@@ -1,18 +1,45 @@
 {
-  "name": "grid_pool_accounts",
-  "version": "0.1.1",
-  "summary": "Puppet module for creating grid pool accounts",
-  "author": "HEP-Puppet",
-  "description": "Puppet module for creating grid pool accounts",
-  "dependencies": [
-    {
-      "name": "puppetlabs/stdlib",
-      "version_requirement": "\u003e\u003d3.2.0"
-    }
-  ],
-  "types": [],
-  "checksums": {},
-  "source": "git@github.com:HEP-Puppet/puppet-grid_pool_accounts.git",
-  "project_page": "https://github.com/HEP-Puppet/puppet-grid_pool_accounts",
-  "license": "Apache License, Version 2.0"
+	"name": "HEPPuppet-grid_pool_accounts",
+	"version": "0.1.1",
+	"summary": "Puppet module for creating grid pool accounts",
+	"author": "HEP-Puppet",
+	"dependencies": [{
+			"name": "puppetlabs/concat",
+			"version_requirement": ">= 1.2.5"
+		},{
+			"name": "puppetlabs/stdlib",
+			"version_requirement": ">= 3.2.0 < 5.0.0"
+		}
+	],
+	"source": "git@github.com:HEP-Puppet/puppet-grid_pool_accounts.git",
+	"project_page": "https://github.com/HEP-Puppet/puppet-grid_pool_accounts",
+	"license": "Apache License, Version 2.0",
+	"requirements": [{
+			"name": "pe",
+			"version_requirement": ">= 3.0.0 < 2015.4.0"
+		},{
+			"name": "puppet",
+			"version_requirement": ">= 3.0.0 < 5.0.0"
+		}
+	],
+	"operatingsystem_support": [{
+			"operatingsystem": "RedHat",
+			"operatingsystemrelease": [ "5",
+				"6",
+				"7"
+			]
+		},{
+			"operatingsystem": "CentOS",
+			"operatingsystemrelease": [ "5",
+				"6",
+				"7"
+			]
+		},{
+			"operatingsystem": "Scientific",
+			"operatingsystemrelease": [ "5",
+				"6",
+				"7"
+			]
+		}
+	]
 }
